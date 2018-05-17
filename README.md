@@ -38,17 +38,21 @@ How to setup Cisco routers, etc...
   - How to get support? Its too difficult!!
   - Initial failure?
  
-## Select connection : ルーターへの接続方式とその準備を行うこと
+## Select connection type of maintenance : ルーターへの接続方式とその準備を行うこと
 + ルーターへの接続(ログイン)は以下3つが用意され(必要機材、スキル等で異なる)
   - CCP Express (Webベースの設定機能) : 一番簡単ですが、細かい設定は未サポート。
   - Telnet : LAN接続で可能。
   - Serial : 専用ケーブル([USB-RJ45 Cable])での接続。
 
-+ CCP Express (3.3以降)を使用し、詳細はCCP ExpressからのCLI実行とするのがお勧め
++ CCP Express を使用し、詳細はCCP ExpressからのCLI実行とするのが~~お勧め~~細かい設定をしないなら許容範囲
   - ミスをしても出荷状態に戻せばCCP Expressが使用可能である(**誤って構成をリセットしない限り**)
   - CCP ExpressのCLIがあればTelnet接続とする必要性は薄い
   - 3.2以降ではIOS、CCP ExpressのUpdateも簡単に行えるようになっている(Good!)
-  
+  - Bugが多いので最新使用を推奨
+  - **テストしていないのか!?**と思われるほどヒドイ
+  - WAN接続テスト画面が常にError表示になる! (3.5.1で解消)
+  - 同じPortで別プロトコルのACLが設定できない!
+
 + 専用ケーブルは必ず用意しておくべし
   - このルータを買う人なら一緒に用意しておくのが吉。転ばぬ先の杖。
   - Amazonで互換品が\1,680程度である
@@ -64,10 +68,14 @@ How to setup Cisco routers, etc...
   - Telnet (via LAN)
   - Serial (via [USB-RJ45 Cable]
 
-+ Recommended to use CCP Express (3.3 or later) with CLI execution
++ ~~Recommended~~ to use CCP Express with CLI execution (If you do not make detailed settings you will be able to use tolerance)
   - If make a mistake, can initialize CCP Express. (Factory Reset)
   - With CLI execution in CCP Express, telnet is unnecessary.
   - 3.2 or later, Easy to update IOS, CCP Express yourself (Good!)
+  - There are many bugs!! Recommended to use the latest version!
+  - Have you not tested yet?
+  - The WAN connection test result always displays Error!
+  - Can not set ACLs for different protocols on the same port!
 
 + Dedicated cables must be prepared
   - It is good to have them together if you buy this router. The stagnant cane.
@@ -85,6 +93,25 @@ How to setup Cisco routers, etc...
 + CCP Expressのクイックセットアップウイザードに従って進めれば良い
 + ただし、セキュリティ設定をデフォルトで有効にすると、ほとんどのポートは閉じられている状態になる
 + Mail関係はIMAP、POP3、SMTPの該当ポートを解放する必要がある
++ DefaultではZONE Security設定になるので、CBACなどは使えない。
+ - 'ゾーンベース ポリシーの概要: 1 つのインターフェイスを、セキュリティ ゾーン メンバとして設定し、同時に ip inspect 用に設定することはできません。'
+ - 以下の様にCBACを設定しようとするとエラーになります
+```
+ip inspect name CBAC tcp
+ip inspect name CBAC udp
+ip inspect name CBAC icmp
+ip cef    
+no ipv6 cef
+
+interface Dialer1
+ ip inspect CBAC out
+
+%Cannot configure inspect rule on an interface which is member of a zone . Remove the interface from the zone and retry.
+```
+ - より強力なZONE Security設定が可能で指定protocolとマッチさせて検証できる
+ - ただ、CCP Expressからの設定はBugが多くて思うように設定されないことが多いのが、極めて残念
+
+[ZONE Security]: https://www.cisco.com/c/ja_jp/support/docs/security/ios-firewall/98628-zone-design-guide.html
 
 1. [セキュリティ] > [ポリシー]で新規追加
 1. [ポート]で該当ポートを追加して保存
